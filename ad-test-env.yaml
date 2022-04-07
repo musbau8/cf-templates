@@ -1,0 +1,415 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Parameters:
+  SecurityGroupDescription:
+    Description: Security Group Description
+    Type: String
+    Default: "sg"
+  # # KeyName:
+  # #   Description: Key Pair for EC2
+  # #   Type: 'AWS::EC2::KeyPair::KeyName'
+  EC2TargetGroup1:
+    Description: target group for alb1
+    Type: String
+    Default: "TG1"
+
+  EC2TargetGroup2:
+    Description: target group for alb2
+    Type: String
+    Default: "TG2"
+
+  # vpcId:
+  #   Description: Please enter your vpc Id 
+  #   Type: String
+
+  # Subnet1Id:
+  #   Description: Please enter your subnet1 Id 
+  #   Type: String
+
+  # Subnet2Id:
+  #   Description: Please enter your subnet2 Id 
+  #   Type: String
+
+Resources:
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+  # PublicSubnet1:
+  #   Type: "AWS::EC2::Subnet"
+  #   Properties:
+  #     CidrBlock: "10.0.0.0/24"
+  #     MapPublicIpOnLaunch: false
+  #     VpcId:
+  #       Ref: "VPC"
+  #     Tags:
+  #       - Key: "Name"
+  #         Value: "Public Subnet AZ A"
+  #     AvailabilityZone:
+  #       Fn::Select:
+  #         - "0"
+  #         - Fn::GetAZs:
+  #             Ref: "AWS::Region"
+  # PublicSubnet2:
+  #   Type: "AWS::EC2::Subnet"
+  #   Properties:
+  #     CidrBlock: "10.0.1.0/24"
+  #     MapPublicIpOnLaunch: false
+  #     VpcId:
+  #       Ref: "VPC"
+  #     Tags:
+  #       - Key: "Name"
+  #         Value: "Public Subnet AZ B"
+  #     AvailabilityZone:
+  #       Fn::Select:
+  #         - "1"
+  #         - Fn::GetAZs:
+  #             Ref: "AWS::Region"
+  PrivateSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      CidrBlock: "10.0.10.0/24"
+      MapPublicIpOnLaunch: false
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Private Subnet AZ A"
+      AvailabilityZone:
+        Fn::Select:
+          - "0"
+          - Fn::GetAZs:
+              Ref: "AWS::Region"
+  PrivateSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      CidrBlock: "10.0.11.0/24"
+      MapPublicIpOnLaunch: false
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Private Subnet AZ B"
+      AvailabilityZone:
+        Fn::Select:
+          - "1"
+          - Fn::GetAZs:
+              Ref: "AWS::Region"
+  # RouteTablePublic:
+  #   Type: "AWS::EC2::RouteTable"
+  #   Properties:
+  #     VpcId:
+  #       Ref: "VPC"
+  #     Tags:
+  #       - Key: "Name"
+  #         Value: "Public Route Table"
+  # RouteTablePublicAssociation1:
+  #   Type: "AWS::EC2::SubnetRouteTableAssociation"
+  #   Properties:
+  #     RouteTableId:
+  #       Ref: "RouteTablePublic"
+  #     SubnetId:
+  #       Ref: "PublicSubnet1"
+  # RouteTablePublicAssociation2:
+  #   Type: "AWS::EC2::SubnetRouteTableAssociation"
+  #   Properties:
+  #     RouteTableId:
+  #       Ref: "RouteTablePublic"
+  #     SubnetId:
+  #       Ref: "PublicSubnet2"
+  # RouteTablePublicRoute0:
+  #   Type: "AWS::EC2::Route"
+  #   Properties:
+  #     DestinationCidrBlock: "0.0.0.0/0"
+  #     RouteTableId:
+  #       Ref: "RouteTablePublic"
+  #     GatewayId:
+  #       Ref: "Igw"
+  RouteTablePrivate1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Private Route Table A"
+  RouteTablePrivate1Association1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId:
+        Ref: "RouteTablePrivate1"
+      SubnetId:
+        Ref: "PrivateSubnet1"
+  # RouteTablePrivate1Route0:
+  #   Type: "AWS::EC2::Route"
+  #   Properties:
+  #     DestinationCidrBlock: "0.0.0.0/0"
+  #     RouteTableId:
+  #       Ref: "RouteTablePrivate1"
+  #     # NatGatewayId:
+  #     #   Ref: "NatGw1"
+  RouteTablePrivate2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId:
+        Ref: "VPC"
+      Tags:
+        - Key: "Name"
+          Value: "Private Route Table B"
+  RouteTablePrivate2Association1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId:
+        Ref: "RouteTablePrivate2"
+      SubnetId:
+        Ref: "PrivateSubnet2"
+  # RouteTablePrivate2Route0:
+  #   Type: "AWS::EC2::Route"
+  #   Properties:
+  #     DestinationCidrBlock: "0.0.0.0/0"
+  #     RouteTableId:
+  #       Ref: "RouteTablePrivate2"
+  #     # NatGatewayId:
+      #   Ref: "NatGw1"
+  # Igw:
+  #   Type: "AWS::EC2::InternetGateway"
+  #   Properties: {}
+  # IGWAttachment:
+  #   Type: "AWS::EC2::VPCGatewayAttachment"
+  #   Properties:
+  #     VpcId:
+  #       Ref: "VPC"
+  #     InternetGatewayId:
+  #       Ref: "Igw"
+  # NatGw1:
+  #   Type: "AWS::EC2::NatGateway"
+  #   Properties:
+  #     SubnetId:
+  #       Ref: "PublicSubnet1"
+  #     AllocationId:
+  #       Fn::GetAtt:
+  #         - "NatGw1ElasticIP"
+  #         - "AllocationId"
+  #     Tags:
+  #       - Key: "Name"
+  #         Value: "NAT GW A"
+  # NatGw1ElasticIP:
+  #   Type: "AWS::EC2::EIP"
+  #   Properties:
+  #     Domain: "vpc"
+
+
+  #EC2 Instances
+  EC2Instance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0f9a92942448ac56f
+      InstanceType: t2.medium
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      SubnetId: !Ref PrivateSubnet1
+#      KeyName: !Ref KeyName  NO SSH Key needed
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 100
+            KmsKeyId: 0d0507d8-7d9b-4844-985d-509d043c2f65
+            Encrypted: true
+            DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: ec2-1-active-directory
+    #  DependsOn: VPC
+    # DependsOn: Ec2InstanceProfile
+ 
+  EC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0f9a92942448ac56f
+      InstanceType: t2.medium
+      IamInstanceProfile: !Ref Ec2InstanceProfile
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      SubnetId: !Ref PrivateSubnet2
+#      KeyName: !Ref KeyName   NO SSH Key needed
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 100
+            KmsKeyId: 0d0507d8-7d9b-4844-985d-509d043c2f65
+            Encrypted: true
+            DeleteOnTermination: true
+      Tags:
+      - Key: Name
+        Value: ec2-2-active-directory
+    DependsOn: VPC
+    # DependsOn: Ec2InstanceProfile
+
+
+# Ec2 Instance Profile 
+  Ec2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [ !Ref Ec2InstanceRole ]
+  Ec2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ ec2.amazonaws.com ]
+            Action:
+              - sts:AssumeRole
+      Path: /
+
+
+  # EC2 and ALB Security Groups
+  ELBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ELB Security Group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 10.10.0.0/16 
+    DependsOn: VPC
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref SecurityGroupDescription
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId:
+          Fn::GetAtt:
+          - ELBSecurityGroup
+          - GroupId
+      - IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
+        SourceSecurityGroupId:
+          Fn::GetAtt:
+          - ELBSecurityGroup
+          - GroupId
+        # DependsOn: VPC
+        
+
+  # Target Group, Listener and Application  Load Balancer
+  # 1
+  EC2TargetGroupAlb1:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: '200'
+      Name: !Ref EC2TargetGroup1
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '20'
+      Targets:
+      - Id: !Ref EC2Instance1
+        Port: 80
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
+    DependsOn: EC2Instance1
+
+  ALBListener1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref EC2TargetGroupAlb1
+      LoadBalancerArn: !Ref internalALB1
+      Port: 80
+      Protocol: HTTP
+
+  internalALB1:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ALB1
+      Scheme: internal
+      LoadBalancerAttributes: 
+        - Key: "deletion_protection.enabled"
+          Value: false
+        - Key: "idle_timeout.timeout_seconds"
+          Value: 60
+      Subnets:
+      - !Ref PrivateSubnet1
+      - !Ref PrivateSubnet2
+      SecurityGroups:
+        - !GetAtt ELBSecurityGroup.GroupId
+      Tags:
+      - Key: Name
+        Value: alb1
+ # 2
+
+  EC2TargetGroupAlb2:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: '200'
+      Name: !Ref EC2TargetGroup2
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '20'
+      Targets:
+      - Id: !Ref EC2Instance2
+        Port: 80
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
+    DependsOn: EC2Instance2
+
+  ALBListener2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref EC2TargetGroupAlb2
+      LoadBalancerArn: !Ref internalALB2
+      Port: 80
+      Protocol: HTTP
+
+  internalALB2:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ALB2
+      Scheme: internal
+      LoadBalancerAttributes: 
+        - Key: "deletion_protection.enabled"
+          Value: false
+        - Key: "idle_timeout.timeout_seconds"
+          Value: 60
+      Subnets:
+      - !Ref PrivateSubnet1
+      - !Ref PrivateSubnet2
+      SecurityGroups:
+        - !GetAtt ELBSecurityGroup.GroupId
+      Tags:
+      - Key: Name
+        Value: alb2
